@@ -2,6 +2,8 @@ const express = require("express");
 const db = require("./config/db");
 const cors = require("cors");
 const crypto = require("crypto");
+const nodemailer = require("nodemailer");
+require("dotenv").config();
 
 const app = express();
 const PORT = 3306;
@@ -50,8 +52,93 @@ app.post("/generate-verification-code", (req, res) => {
     (err, result) => {
       if (err) {
         console.log(err);
+      } else {
+        sendVerificationEmail(email, verificationCode); // Send email
+        console.log(result);
+        res.send("Verification code sent to email");
       }
-      console.log(result);
+    }
+  );
+});
+
+// Nodemailer configuration
+const transporter = nodemailer.createTransport({
+  service: "hotmail", // e.g., 'gmail', 'outlook', etc.
+  auth: {
+    user: "jdscarproject@hotmail.com",
+    pass: process.env.EMAIL_PASS,
+  },
+});
+
+// Function to send verification email
+function sendVerificationEmail(email, verificationCode) {
+  const confirmationLink = `http://localhost:3306/confirm/${verificationCode}`;
+
+  const mailOptions = {
+    from: "jdscarproject@hotmail.com",
+    to: email,
+    subject: "Email Confirmation",
+    html: `<p>Please click <a href="${confirmationLink}">here</a> to confirm your email.</p>`,
+  };
+
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      console.log(error);
+    } else {
+      console.log("Email sent: " + info.response);
+    }
+  });
+}
+
+// Route to handle email confirmation link
+app.get("/confirm/:token", (req, res) => {
+  const token = req.params.token;
+  const confirmationDate = new Date(); // Get current date and time
+
+  db.query(
+    "SELECT emails FROM verify_emails WHERE token = ?",
+    [token],
+    (err, result) => {
+      if (err) {
+        console.log(err);
+        res.send("Error confirming email");
+      } else {
+        if (result.length > 0) {
+          const email = result[0].emails;
+
+          // Email and token are correct, perform necessary actions
+          db.query(
+            "DELETE FROM verify_emails WHERE token = ?",
+            [token],
+            (deleteErr, deleteResult) => {
+              if (deleteErr) {
+                console.log(deleteErr);
+                res.send("Error confirming email");
+              } else {
+                console.log(deleteResult);
+                res.send(
+                  `Email ${email} confirmed and entry removed from table`
+                );
+              }
+            }
+          );
+
+          db.query(
+            "INSERT INTO confirmed_emails (email, last_date) VALUES (?, ?)",
+            [email, confirmationDate],
+            (err, result) => {
+              if (err) {
+                console.log(err);
+              }
+              console.log(result);
+            }
+          );
+        } else {
+          res.send(
+            `Email ${email} confirmed and entry removed from table. Confirmation date: ${confirmationDate}`
+          );
+        }
+      }
     }
   );
 });
