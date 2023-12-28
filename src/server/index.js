@@ -3,6 +3,7 @@ const db = require("./config/db");
 const cors = require("cors");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
+const cron = require("node-cron");
 require("dotenv").config();
 
 const app = express();
@@ -93,7 +94,6 @@ function sendVerificationEmail(email, verificationCode) {
 // Route to handle email confirmation link
 app.get("/confirm/:token", (req, res) => {
   const token = req.params.token;
-  const confirmationDate = new Date(); // Get current date and time
 
   db.query(
     "SELECT emails FROM verify_emails WHERE token = ?",
@@ -122,26 +122,62 @@ app.get("/confirm/:token", (req, res) => {
               }
             }
           );
-
-          db.query(
-            "INSERT INTO confirmed_emails (email, last_date) VALUES (?, ?)",
-            [email, confirmationDate],
-            (err, result) => {
-              if (err) {
-                console.log(err);
-              }
-              console.log(result);
-            }
-          );
-        } else {
-          res.send(
-            `Email ${email} confirmed and entry removed from table. Confirmation date: ${confirmationDate}`
-          );
+          createConfirmedEmail(email);
         }
       }
     }
   );
 });
+
+function createConfirmedEmail(email) {
+  const confirmationDate = new Date(); // Get current date and time
+  db.query(
+    "INSERT INTO confirmed_emails (email, brake_last, coolant_last, oil_last, steering_last, transmission_last) VALUES (?, ?, ?, ?, ?, ?)",
+    [
+      email,
+      confirmationDate,
+      confirmationDate,
+      confirmationDate,
+      confirmationDate,
+      confirmationDate,
+    ],
+    (err, result) => {
+      if (err) {
+        console.log(err);
+      }
+      console.log(result);
+    }
+  );
+}
+
+cron.schedule("* * * * *", () => {
+  console.log("running a task every minute");
+  checkBrakeFluid();
+});
+
+function checkBrakeFluid() {
+  const sixMonthsAgo = new Date();
+  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+  const formattedDate = sixMonthsAgo.toISOString().split("T")[0]; // Format date to YYYY-MM-DD
+  console.log(formattedDate);
+
+  // Query to find records where brake_last is exactly 6 months ago
+  const query = `SELECT email, brake_last FROM confirmed_emails WHERE brake_last = '${formattedDate}'`;
+
+  db.query(query, (err, result) => {
+    if (result.length > 0) {
+      // Perform actions for records with brake_last 6 months ago
+      console.log(
+        "Records found with brake_last exactly 6 months ago:",
+        result
+      );
+      // Perform your desired actions here
+      // For example: Send notifications or perform specific tasks
+    } else {
+      console.log("No records found with brake_last exactly 6 months ago.");
+    }
+  });
+}
 
 app.listen(PORT, () => {
   console.log(`Server is running on ${PORT}`);
