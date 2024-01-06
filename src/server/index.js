@@ -152,32 +152,75 @@ function createConfirmedEmail(email) {
 
 cron.schedule("* * * * *", () => {
   console.log("running a task every minute");
-  checkBrakeFluid();
+  checker(1, "oil_last", "engine oil");
 });
 
-function checkBrakeFluid() {
-  const sixMonthsAgo = new Date();
-  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-  const formattedDate = sixMonthsAgo.toISOString().split("T")[0]; // Format date to YYYY-MM-DD
+function checker(toCheck, columnName, message) {
+  const monthsAgo = new Date();
+  monthsAgo.setMonth(monthsAgo.getMonth() - toCheck);
+  const formattedDate = monthsAgo.toISOString().split("T")[0]; // Format date to YYYY-MM-DD
   console.log(formattedDate);
 
-  // Query to find records where brake_last is exactly 6 months ago
-  const query = `SELECT email, brake_last FROM confirmed_emails WHERE brake_last = '${formattedDate}'`;
+  const query = `SELECT email, ${columnName} FROM confirmed_emails WHERE ${columnName} = '${formattedDate}'`;
 
   db.query(query, (err, result) => {
+    if (err) {
+      console.error(`Error checking ${columnName}:`, err);
+      return;
+    }
+
     if (result.length > 0) {
-      // Perform actions for records with brake_last 6 months ago
       console.log(
-        "Records found with brake_last exactly 6 months ago:",
+        `Records found with ${columnName} exactly ${toCheck} months ago:`,
         result
       );
-      // Perform your desired actions here
-      // For example: Send notifications or perform specific tasks
+      result.forEach((record) => {
+        sendEmailThrottled(record.email, `Your ${message} may need attention!`);
+        updateLast(columnName, record);
+      });
     } else {
-      console.log("No records found with brake_last exactly 6 months ago.");
+      console.log(
+        `No records found with ${columnName} exactly ${toCheck} months ago.`
+      );
     }
   });
 }
+
+function updateLast(columnName, record) {
+  const currentDate = new Date().toISOString().split("T")[0]; // Get today's date in YYYY-MM-DD format
+
+  const updateQuery = `UPDATE confirmed_emails SET ${columnName} = '${currentDate}' WHERE email = '${record.email}'`;
+
+  db.query(updateQuery, (err, result) => {
+    if (err) {
+      console.error(`Error updating ${columnName}:`, err);
+    } else {
+      console.log(
+        `${columnName} updated for ${record.email} to ${currentDate}`
+      );
+    }
+  });
+}
+
+const sendEmailThrottled = async (email, message) => {
+  try {
+    // Your email sending logic using Nodemailer
+    const mailOptions = {
+      from: "jdscarproject@hotmail.com",
+      to: email,
+      subject: "Reminder",
+      html: `<p>${message}</p>`,
+    };
+    await transporter.sendMail(mailOptions);
+    console.log("Email sent successfully!");
+  } catch (error) {
+    console.error("Error sending email: trying again in 5s");
+    // Implement retry mechanism or wait before retrying
+    await new Promise((resolve) => setTimeout(resolve, 5000)); // Wait for 5 seconds before retrying
+    // Retry sending the email
+    await sendEmailThrottled(email, message);
+  }
+};
 
 app.listen(PORT, () => {
   console.log(`Server is running on ${PORT}`);
