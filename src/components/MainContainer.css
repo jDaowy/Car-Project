@@ -1,0 +1,8 @@
+.main-container {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-size: cover;
+    /* Add any additional styles as needed */
+  }

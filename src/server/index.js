@@ -150,9 +150,13 @@ function createConfirmedEmail(email) {
   );
 }
 
-cron.schedule("* * * * *", () => {
+cron.schedule("0 0 * * *", () => {
   console.log("running a task every minute");
+  checker(6, "brake_last", "brake fluid");
+  checker(3, "coolant_last", "coolant/antifreeze");
   checker(1, "oil_last", "engine oil");
+  checker(3, "steering_last", "power steering");
+  checker(24, "transmission_last", "transmission fluid");
 });
 
 function checker(toCheck, columnName, message) {
