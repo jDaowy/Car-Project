@@ -1,8 +1,48 @@
 .main-container {
     height: 100vh;
     display: flex;
-    justify-content: center;
-    align-items: center;
     background-size: cover;
+    display: flex;
+    flex-direction: column;
     /* Add any additional styles as needed */
   }
+
+  .title-container{
+    display:flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .car-container{
+    display:flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .yap{
+    color:greenyellow;
+    margin-left: 15vw;
+  }
+  .table-container {
+    background-color: white;
+    max-width: 70vw; /* Set your desired maximum width */
+    width: 100%;
+    margin: auto; /* Center the container horizontally */
+    margin-top: 10px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .signup{
+    color:greenyellow;
+    margin-left: 15vw;
+    margin-bottom: 10px;
+  }
+
+  .input-container{
+    display:flex;
+    margin-left: 15vw;
+  }
+  

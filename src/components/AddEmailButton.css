@@ -1,0 +1,49 @@
+.email-input{
+    background-color: transparent;
+    border-color: greenyellow;
+    color: greenyellow;
+    margin-right: 1vw;
+    height: 30px;;
+    margin-top: 3px;
+    font-size: large;
+}
+
+input[type="text"]:focus {
+    outline: none;
+    border-color: greenyellow;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+  }
+
+  .button-style {
+    display: inline-block;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    font-weight: 500;
+    line-height: 1.5;
+    color: greenyellow;
+    white-space: nowrap;
+    background-color: transparent;
+    border: 2px solid transparent;
+    border-radius: 9999px;
+    border-color: greenyellow;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+  
+    &:hover {
+      background-color: greenyellow;
+      color: black;
+      border-color: greenyellow;
+    }
+  
+    &:focus {
+      outline: none;
+    }
+}
+
+.input-result{
+    color: yellowgreen;
+    font-size: larger;
+    font-weight: 900;
+}

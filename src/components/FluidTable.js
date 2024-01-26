@@ -28,7 +28,7 @@ export default function App() {
   ];
 
   return (
-    <div style={{ height: 300, width: "100%" }}>
+    <div className="data-grid" style={{ height: 300, width: "100%" }}>
       <DataGrid rows={gridData} columns={columns} />
     </div>
   );

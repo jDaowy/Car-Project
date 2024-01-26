@@ -2,18 +2,18 @@ import React, { useState } from "react";
 import Axios from "axios";
 import "../App.css";
 import validator from "validator";
-import "./AddEmailButton.css";
+import "./UnsubscribeButton.css";
 
-function AddEmailButton() {
+function UnsubscribeButton() {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState(""); // State to hold success/error message
 
-  const submitEmail = () => {
+  const deleteEmail = () => {
     if (validator.isEmail(email)) {
-      Axios.post("http://localhost:3306/generate-verification-code", {
+      Axios.post("http://localhost:3306/delete-email", {
         email: email,
       });
-      setMessage("Please Confirm Email");
+      setMessage("Email deleted from mailing list");
     } else {
       setMessage("*INVALID EMAIL FORMAT*");
     }
@@ -35,12 +35,12 @@ function AddEmailButton() {
       </div>
       {/* <button onClick={submitEmail}>Add Email</button> */}
       <div className="border w-full h-40 flex items-center justify-center">
-        <a href="#_" className="button-style" onClick={submitEmail}>
-          Add Email
+        <a href="#_" className="button-style" onClick={deleteEmail}>
+          Unsubscribe
         </a>
       </div>
     </>
   );
 }
 
-export default AddEmailButton;
+export default UnsubscribeButton;

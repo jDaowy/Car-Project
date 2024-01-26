@@ -226,6 +226,24 @@ const sendEmailThrottled = async (email, message) => {
   }
 };
 
+app.post("/delete-email", (req, res) => {
+  const emailToDelete = req.body.email;
+
+  db.query(
+    "DELETE FROM confirmed_emails WHERE email = ?",
+    [emailToDelete],
+    (err, result) => {
+      if (err) {
+        console.log(err);
+        res.status(500).send("Error deleting email");
+      } else {
+        console.log(result);
+        res.send("Email deleted successfully");
+      }
+    }
+  );
+});
+
 app.listen(PORT, () => {
   console.log(`Server is running on ${PORT}`);
 });
